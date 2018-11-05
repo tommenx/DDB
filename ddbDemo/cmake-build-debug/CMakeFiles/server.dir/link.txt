@@ -1,0 +1,1 @@
+/Library/Developer/CommandLineTools/usr/bin/c++  -g -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/server.dir/main.cpp.o CMakeFiles/server.dir/rpc_server.cpp.o CMakeFiles/server.dir/local_sql.cpp.o  -o server /Users/tommenx/Documents/mysql-connector/lib64/libmysqlcppconn.7.dylib /Users/tommenx/Documents/rpclib/build/librpc.a 

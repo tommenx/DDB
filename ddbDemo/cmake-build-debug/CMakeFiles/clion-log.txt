@@ -1,0 +1,5 @@
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/tommenx/CLionProjects/ddbDemo
+/Users/tommenx/Documents/mysql-connector/lib64/libmysqlcppconn.7.dylib
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/tommenx/CLionProjects/ddbDemo/cmake-build-debug
