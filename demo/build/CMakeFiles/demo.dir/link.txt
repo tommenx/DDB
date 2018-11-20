@@ -1,0 +1,1 @@
+/usr/bin/c++    -pthread -lrpc -lrpc_sql   CMakeFiles/demo.dir/local_sql.cpp.o CMakeFiles/demo.dir/rpc_server.cpp.o CMakeFiles/demo.dir/rpc_server_test.cpp.o  -o demo  -L/home/tommenx/demo/lib -rdynamic -lmysqlcppconn /home/tommenx/share/rpclib/build/librpc.a -Wl,-rpath,/home/tommenx/demo/lib 
