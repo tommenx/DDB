@@ -1,3 +1,5 @@
+#ifndef _DDB_METADATA_H_
+#define _DDB_METADATA_H_
 #include <curl/curl.h>  
 #include <json/json.h>  
 #include <iostream>  
@@ -58,9 +60,9 @@ using namespace Json;
 // int attr_count;
 // };
 struct ConditionH{
-    string attr_name;
-    string operation;
-    string attr_value;
+    string attr_name="";
+    string operation="";
+    string attr_value="";
 };
 
 struct frag{
@@ -91,3 +93,6 @@ Table Get_Table(string &tablename);
 Fragment1 Change_Frag(Fragment f1);
 Fragment1 Get_Fragment1(string &tablename);
 void Get_TableAttrs(string &tablename,string str[]);
+SiteInfos Get_SiteInfo();
+bool Save_SiteInfo(SiteInfo site);
+#endif /*_DDB_METADATA_H_*/

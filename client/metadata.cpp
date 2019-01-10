@@ -125,13 +125,14 @@ bool Save_Table(Table TableInfo)
     mapAttrinfo.insert(pair<int,string>(1,"is_key"));
     mapAttrinfo.insert(pair<int,string>(2,"size"));
     mapAttrinfo.insert(pair<int,string>(3,"type"));
+    mapAttrinfo.insert(pair<int,string>(4,"index"));
     Table t1 = TableInfo;
     string tablename = t1.tb_name;
     string etcd_url = "/tableinfo";
     string dir = Create_Dir(etcd_url,tablename);
     if(dir!="fail")
     {
-        for(int i =0;i<(t1.attr_count);i++)
+        for(int i =0;i<(t1.attr_count+1);i++)
         {
             string etcd_dir = dir;
             string attrname = t1.attrs[i].attr_name;
@@ -166,6 +167,13 @@ bool Save_Table(Table TableInfo)
             {
                 return false;
             }
+            string attr_info4 = mapAttrinfo[4];
+            string key4 = new_dir+"/"+attr_info4; 
+            string value4 = to_string(i);
+            if(!Insert_Attrvalue(key4,value4)==true)
+            {
+                return false;
+            }
         }
         return true;
     }
@@ -174,7 +182,7 @@ bool Save_Table(Table TableInfo)
 bool Save_Fragment(Fragment table)
 {//存储fragment
     Fragment f1 = table;
-     map<int,string> mapAttrinfo;
+    map<int,string> mapAttrinfo;
     mapAttrinfo.insert(pair<int,string>(0,"attr_name"));
     mapAttrinfo.insert(pair<int,string>(1,"operation"));
     mapAttrinfo.insert(pair<int,string>(2,"attr_value"));
@@ -324,11 +332,15 @@ Fragment To_json(string &info,string &tablename)
             string text = writer.write(nodei[j]["key"]);
             regex pattern("\"/(.*)/(.*)/(.*)\"\n");
             smatch results;
+            int indexID;
             if (regex_match(text, results, pattern)) {
                     string Dnum = results[3];
                     int DDum = atoi(Dnum.c_str());
-                    f1.fragment[j].DBnum=DDum;
-                  
+                    indexID=DDum-1;
+                    cout<<"fragment:"<<DDum<<endl;
+                    cout<<"j:"<<j<<endl;
+                    f1.fragment[indexID].DBnum=DDum;
+                    cout<<"f1:"<<f1.fragment[indexID].DBnum<<endl;
             }
             else {
             cout << "match failed: " << text << endl;
@@ -355,8 +367,21 @@ Fragment To_json(string &info,string &tablename)
                     } 
                     if(nodestringw.size()==5)
                     {
-                        f1.fragment[j].condition_v_count=nodek.size();
+                        f1.fragment[indexID].condition_v_count=nodek.size();
                         string sss = writer.write(nodek[w]["value"]);
+                        string kkk = writer.write(nodek[w]["key"]);
+                        cout<<kkk<<endl;
+                        regex pattern1("\"/(.*)/(.*)/(.*)/(.*)/(.*)\"\n");
+                        smatch results1;
+                        string indexs;
+                        if (regex_match(kkk, results1, pattern1)) {
+                             indexs = results1[5];
+                            }
+                        else {
+                                cout << "match failed: " << text << endl;
+                            }
+                        cout<<"分片："<<indexs<<endl;
+                        int v_index= stoi(indexs);
                         regex pattern("\"(.*)\"\n");
                         smatch results;
                         string Dnum;
@@ -368,10 +393,10 @@ Fragment To_json(string &info,string &tablename)
                                 cout << "match failed: " << text << endl;
                             }
                            
-                        f1.fragment[j].condition_v[w]=Dnum;
+                        f1.fragment[indexID].condition_v[v_index]=Dnum;
                     }
                     else{
-                        f1.fragment[j].condition_h_count=nodek.size();
+                        f1.fragment[indexID].condition_h_count=nodek.size();
                         for(int t=0;t<nodew.size();t++)
                         {
                            string attr_info1= "attr_name";
@@ -392,7 +417,7 @@ Fragment To_json(string &info,string &tablename)
                                 else {
                                 cout << "match failed: " << text << endl;
                                 }
-                               f1.fragment[j].condition_h[w].attr_name=Dnum; 
+                               f1.fragment[indexID].condition_h[w].attr_name=Dnum; 
                                
                            }
                             if(s1.find(attr_info2)<s1.length())
@@ -408,7 +433,7 @@ Fragment To_json(string &info,string &tablename)
                                 else {
                                 cout << "match failed: " << text << endl;
                                 }
-                               f1.fragment[j].condition_h[w].operation=Dnum;
+                               f1.fragment[indexID].condition_h[w].operation=Dnum;
                               
                            }
                             if(s1.find(attr_info3)<s1.length())
@@ -423,7 +448,7 @@ Fragment To_json(string &info,string &tablename)
                                 else {
                                 cout << "match failed: " << text << endl;
                                 }
-                               f1.fragment[j].condition_h[w].attr_value=Dnum;
+                               f1.fragment[indexID].condition_h[w].attr_value=Dnum;
                                
                            }
 
@@ -469,20 +494,44 @@ Table To_Table(string &info,string &tablename)
     {
         Value nodek;
         string nodestringk = writer.write(nodei[k]["nodes"]);
+         cout<<nodestringk<<endl;
         if(!reader.parse(nodestringk, nodek))  
         {  
             cout << "parse json error" << endl;   
-        }  
+        } 
+        int index;
+        string attr_info5= "index";
+          
+        for(int t =0;t<nodek.size();t++)
+            {
+                string nodestringt = writer.write(nodek[t]["key"]);
+                if(nodestringt.find(attr_info5)<nodestringt.length())
+                {
+                    string sss = writer.write(nodek[t]["value"]);
+                    regex pattern("\"(.*)\"\n");
+                    smatch results;
+                    string Dnum;
+                    if (regex_match(sss, results, pattern)) {
+                    Dnum = results[1];
+
+                    }
+                    else {
+                            cout << "match failed: " << sss << endl;
+                    }
+                    index = stoi(Dnum);
+                    cout<<"index:"<<index<<endl;
+                }
+            }
         for(int j =0;j<nodek.size();j++)
         {
             Value nodej;
             string nodestringj = writer.write(nodek[j]["key"]);
+           
             string attr_info1= "attr_name";
             string attr_info2= "is_key";
             string attr_info3= "size";
             string attr_info4= "type";
-
-            if(nodestringj.find(attr_info1)<nodestringj.length())
+          if(nodestringj.find(attr_info1)<nodestringj.length())
             {
                 string sss = writer.write(nodek[j]["value"]);
                 regex pattern("\"(.*)\"\n");
@@ -495,7 +544,7 @@ Table To_Table(string &info,string &tablename)
                 else {
                         cout << "match failed: " << sss << endl;
                 }
-                t1.attrs[k].attr_name=Dnum; 
+                t1.attrs[index].attr_name=Dnum; 
                         
             }
             else if(nodestringj.find(attr_info2)<nodestringj.length())
@@ -514,10 +563,10 @@ Table To_Table(string &info,string &tablename)
                 }
                 if(Dnum=="true")
                 {
-                     t1.attrs[k].is_key=true;
+                     t1.attrs[index].is_key=true;
                 }
                 else{
-                    t1.attrs[k].is_key=false;
+                    t1.attrs[index].is_key=false;
                 }
                 
 
@@ -536,11 +585,11 @@ Table To_Table(string &info,string &tablename)
                 else {
                         cout << "match failed: " << sss << endl;
                 }
-                t1.attrs[k].size=stoi(Dnum);
+                t1.attrs[index].size=stoi(Dnum);
   
             
             }
-            else if(nodestringk.find(attr_info4)<nodestringk.length())
+            else if(nodestringj.find(attr_info4)<nodestringj.length())
             {
                                string sss = writer.write(nodek[j]["value"]);
                 regex pattern("\"(.*)\"\n");
@@ -553,7 +602,7 @@ Table To_Table(string &info,string &tablename)
                 else {
                         cout << "match failed: " << sss << endl;
                 }
-                t1.attrs[k].type=Dnum;    
+                t1.attrs[index].type=Dnum;    
 
 
             }
@@ -589,11 +638,17 @@ Fragment1 Change_Frag(Fragment f1)
             {
                 f_c.conditions[i].is_needed=false;
             }
-            f_c.conditions[i].is_needed=true;
+            else{
+                f_c.conditions[i].is_needed=true;
+            }
+            
+            
         }
         else{
             f_c.conditions[i].is_needed=true;
         }
+        f_c.conditions[i].h1.is_needed=false;
+        f_c.conditions[i].h2.is_needed=false;
         for(int j =0;j<f1.fragment[i].condition_h_count;j++)
         {
             if(j==0)
@@ -644,4 +699,145 @@ void Get_TableAttrs(string &tablename,string str[])
         str[i]=t1.attrs[i].attr_name;
     }
     
+}
+
+SiteInfos Get_SiteInfo()
+{
+    SiteInfos s;
+    string dir = "siteinfo/";
+    string info  = Search_Value(dir);
+    Value root;  
+    Value node;
+    Value node1;
+    Value node2;  
+    Reader reader;  
+    FastWriter writer; 
+    string json = info;
+     if(!reader.parse(json, root))  
+    {  
+        cout << "parse json error" << endl;   
+
+    }  
+    string nodeString = writer.write(root["node"]);  
+    if(!reader.parse(nodeString, node))  
+    {  
+        cout << "parse json error" << endl;   
+ 
+    }  
+    Value nodei;
+    string nodestringi = writer.write(node["nodes"]);
+    if(!reader.parse(nodestringi, nodei))  
+    {  
+    cout << "parse json error" << endl;   
+    }  
+    s.sitenum = nodei.size();
+    for(int j = 0;j<s.sitenum;j++)
+        {
+            string jj = writer.write(nodei[j]["key"]);
+            regex pattern("\"/siteinfo/(.*)\"\n");
+            smatch results;
+            string Dnum1;
+            if (regex_match(jj, results, pattern))
+            {
+                Dnum1 = results[1];
+            }
+            else 
+            {
+                cout << "match failed: " << jj << endl;
+            }
+
+            int index2 = stoi(Dnum1);
+            Value nodej;
+            string nodestringj = writer.write(nodei[j]["nodes"]);
+            if(!reader.parse(nodestringj, nodej))  
+            {  
+            cout << "parse json error" << endl;   
+            }          
+            for(int k =0;k<nodej.size();k++)
+            {
+                string nodestringk = writer.write(nodej[k]["key"]);
+                string attr_info1= "ip";
+                string attr_info2= "port";
+                string attr_info3= "db_name";
+                
+                if(nodestringk.find(attr_info1)<nodestringk.length())
+                {
+                    string sss = writer.write(nodej[k]["value"]);
+                    regex pattern("\"(.*)\"\n");
+                    smatch results;
+                    string Dnum;
+                    if (regex_match(sss, results, pattern)) {
+                    Dnum = results[1];
+                    }
+                    else {
+                            cout << "match failed: " << sss << endl;
+                    }
+                    s.site[j].ip=Dnum;
+                    s.site[j].siteID=index2;                       
+                }
+                else if(nodestringk.find(attr_info2)<nodestringk.length())
+                {
+                    string sss = writer.write(nodej[k]["value"]);
+                    regex pattern("\"(.*)\"\n");
+                    smatch results;
+                    string Dnum;
+                    if (regex_match(sss, results, pattern)) {
+                    Dnum = results[1];
+                    }
+                    else {
+                            cout << "match failed: " << sss << endl;
+                    }
+                    s.site[j].port=Dnum;                  
+                }
+                else if(nodestringk.find(attr_info3)<nodestringk.length())
+                {
+                    string sss = writer.write(nodej[k]["value"]);
+                    regex pattern("\"(.*)\"\n");
+                    smatch results;
+                    string Dnum;
+                    if (regex_match(sss, results, pattern)) {
+                    Dnum = results[1];
+                    }
+                    else {
+                            cout << "match failed: " << sss << endl;
+                    }
+                    s.site[j].db_name=Dnum;                
+                }
+            }
+        }
+    return s;
+}
+
+bool Save_SiteInfo(SiteInfo site)
+{//存储site数据
+    map<int,string> mapsiteinfo;
+    mapsiteinfo.insert(pair<int,string>(0,"ip"));
+    mapsiteinfo.insert(pair<int,string>(1,"db_name"));
+    mapsiteinfo.insert(pair<int,string>(2,"port"));
+    
+    SiteInfo s1 = site;
+    
+    string tablename = to_string(s1.siteID);
+    string etcd_url = "/siteinfo";
+    string dir = Create_Dir(etcd_url,tablename);
+    if(dir!="fail")
+    {
+        string attr_info0 = mapsiteinfo[0];
+        string key0 = dir+"/"+attr_info0;
+        string value0 = s1.ip;
+        if(!Insert_Attrvalue(key0,value0)==true)
+        {return false;}
+        string attr_info1 = mapsiteinfo[1];
+        string key1 = dir+"/"+attr_info1;
+        string value1 = s1.db_name;
+        if(!Insert_Attrvalue(key1,value1)==true)
+        {return false;}
+        string attr_info2 = mapsiteinfo[2];
+        string key2 = dir+"/"+attr_info2;
+        string value2 = s1.port;
+        if(!Insert_Attrvalue(key2,value2)==true)
+        {return false;} 
+        return true;
+        }
+        return false;
 }

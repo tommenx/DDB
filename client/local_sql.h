@@ -2,6 +2,7 @@
 // Created by tommenx on 2018/10/27.
 //
 #include <string>
+#include <vector>
 #include <iostream>
 #include <jdbc/mysql_connection.h>
 #include <jdbc/cppconn/driver.h>
@@ -21,6 +22,7 @@ using sql::Statement;
 using std::string;
 using sql::ResultSet;
 using std::ofstream;
+using std::vector;
 
 
 string getMysqlIp();

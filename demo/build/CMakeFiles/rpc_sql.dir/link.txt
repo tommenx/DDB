@@ -1,2 +1,0 @@
-/usr/bin/ar qc librpc_sql.a  CMakeFiles/rpc_sql.dir/local_sql.cpp.o CMakeFiles/rpc_sql.dir/rpc_server.cpp.o CMakeFiles/rpc_sql.dir/rpc_sql.cpp.o
-/usr/bin/ranlib librpc_sql.a

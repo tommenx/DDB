@@ -1,4 +1,0 @@
-/home/tommenx/share/demo/build/CMakeFiles/edit_cache.dir
-/home/tommenx/share/demo/build/CMakeFiles/rebuild_cache.dir
-/home/tommenx/share/demo/build/CMakeFiles/demo.dir
-/home/tommenx/share/demo/build/CMakeFiles/rpc_sql.dir

@@ -50,7 +50,7 @@ string gen_create_stmt(Table table){
     return stmt;
 }
 
-string gen_tmp_create_stmt(TableInfo info){
+string gen_tmp_create_stmt(Table info){
     string stmt = "CREATE TABLE tmp_" + info.tb_name + "(";
     for(int i = 0; i < info.attr_count; i++){
         stmt.append(info.attrs[i].attr_name);
@@ -125,13 +125,13 @@ string gen_insert_stmt(string insert_records[],int insert_record_count,string tm
 
 vector<string> v_insert(Fragment1 fragment, string insert_records[], int insert_record_count){
     vector<string> stmts;
-    if(insert_record_count < 3){
-        return stmts;
-    }
+    // if(insert_record_count < 3){
+    //     return stmts;
+    // }
 
     string stmt1 = "INSERT INTO " 
     + fragment.tb_name
-    +"( c_id,name) VALUES ("
+    +"( id,name) VALUES ("
     +insert_records[0]
     +", "
     +insert_records[1]
@@ -139,10 +139,14 @@ vector<string> v_insert(Fragment1 fragment, string insert_records[], int insert_
 
     string stmt2 = "INSERT INTO " 
     + fragment.tb_name
-    +"( c_id,rank) VALUES ("
+    +"( id,location,credit_hour,teacher_id) VALUES ("
     +insert_records[0]
     +", "
     +insert_records[2]
+    +", "
+    +insert_records[3]
+    +", "
+    +insert_records[4]
     +");";
 
     stmts.push_back(stmt1);
@@ -215,6 +219,8 @@ vector<string> gen_v_select_by_frag(Fragment1 fragment,string tmp_tb_name){
 
 vector<string> Split(string& src,const string& separator){
     vector<string> dest;
+    if(src == "")
+        return dest;
     string str = src;
     string substring;
     int start = 0, index;
@@ -237,9 +243,11 @@ vector<string> Split(string& src,const string& separator){
     return dest;
 }
 
-string gen_batch_insert(TableInfo info,string src){
+string gen_batch_insert(Table info,string src){
     string stmt = "INSERT INTO " + info.tb_name + " VALUES";
     string str = src;
+    if(str == "NULL")
+        return str;
     vector<string>dest = Split(str,"\n");
     for(auto it = dest.begin(); it != dest.end(); it++){
         stmt += "( " + *it + " ),";
@@ -253,7 +261,7 @@ string gen_batch_insert_v(string src,int c){
     string str = src;
     string stmt = "INSERT INTO ";
     if(0 == c){
-        stmt += "customer(c_id,name)VALUES";
+        stmt += "Course(id,name)VALUES";
         vector<string>dest = Split(str,"\n");
         for(auto it = dest.begin(); it != dest.end(); it++){
             stmt += "( " + *it + " ),";
@@ -262,7 +270,7 @@ string gen_batch_insert_v(string src,int c){
         stmt += ";";
     }
     else if(1 == c){
-        stmt += "customer(c_id,rank)VALUES";
+        stmt += "Course(id,location,credit_hour,teacher_id)VALUES";
         vector<string>dest = Split(str,"\n");
         for(auto it = dest.begin(); it != dest.end(); it++){
             stmt += "( " + *it + " ),";
